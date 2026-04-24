@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import type { BoardState } from './types'
-import { isCardRow, type BoardDispatch } from './useBoard'
+import { hasItemSelection, isCardRow, isColumnRow, type BoardDispatch } from './useBoard'
 
 export function useKeyboard(state: BoardState, dispatch: BoardDispatch) {
   useEffect(() => {
@@ -14,9 +14,15 @@ export function useKeyboard(state: BoardState, dispatch: BoardDispatch) {
       }
 
       if (e.key === 'Shift') {
-        if (state.mode !== 'grab' && state.selection) {
+        if (state.mode !== 'grab' && hasItemSelection(state)) {
           dispatch({ type: 'setMode', mode: 'grab' })
         }
+        return
+      }
+
+      if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault()
+        dispatch({ type: 'setTarget', target: state.target === 'cards' ? 'columns' : 'cards' })
         return
       }
 
@@ -29,34 +35,44 @@ export function useKeyboard(state: BoardState, dispatch: BoardDispatch) {
           const dx = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0
           const dy = e.key === 'ArrowUp' ? -1 : e.key === 'ArrowDown' ? 1 : 0
           if (state.mode === 'grab') {
-            dispatch({ type: 'moveCard', dx, dy })
+            dispatch({ type: 'moveItem', dx, dy })
           } else {
             dispatch({ type: 'moveSelection', dx, dy })
           }
           return
         }
         case 'Enter': {
-          if (!state.selection || state.mode !== 'idle') return
+          if (state.mode !== 'idle') return
           e.preventDefault()
-          if (isCardRow(state, state.selection)) {
-            dispatch({ type: 'setMode', mode: 'edit' })
+          if (state.target === 'columns') {
+            if (isColumnRow(state)) dispatch({ type: 'setMode', mode: 'edit' })
+            else dispatch({ type: 'addColumn' })
           } else {
-            dispatch({ type: 'addCard', col: state.selection.col })
+            if (!state.cardSelection) return
+            if (isCardRow(state, state.cardSelection)) {
+              dispatch({ type: 'setMode', mode: 'edit' })
+            } else {
+              dispatch({ type: 'addCard', col: state.cardSelection.col })
+            }
           }
           return
         }
         case ' ': {
-          if (!state.selection || state.mode !== 'idle') return
+          if (state.mode !== 'idle') return
           e.preventDefault()
-          dispatch({ type: 'addCard', col: state.selection.col })
+          if (state.target === 'columns') {
+            dispatch({ type: 'addColumn' })
+          } else if (state.cardSelection) {
+            dispatch({ type: 'addCard', col: state.cardSelection.col })
+          }
           return
         }
         case 'Delete':
         case 'Backspace': {
-          if (!state.selection || !isCardRow(state, state.selection)) return
+          if (!hasItemSelection(state)) return
           e.preventDefault()
           if (state.mode === 'confirmDelete') {
-            dispatch({ type: 'deleteCard' })
+            dispatch({ type: 'deleteItem' })
           } else {
             dispatch({ type: 'setMode', mode: 'confirmDelete' })
           }

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { Card as CardType, Mode } from './types'
 import type { BoardDispatch } from './useBoard'
+import { outlineFor } from './selection'
 
 type Props = {
   card: CardType
@@ -22,13 +23,7 @@ export function Card({ card, selected, mode, dispatch }: Props) {
     selected && mode === 'grab'
       ? 'bg-emerald-600 text-white'
       : 'bg-slate-700 text-slate-100'
-
-  const OUTLINE: Partial<Record<Mode, string>> = {
-    idle: 'outline outline-2 outline-sky-400',
-    edit: 'outline outline-2 outline-amber-400',
-    confirmDelete: 'outline outline-2 outline-red-500',
-  }
-  const outline = selected ? OUTLINE[mode] ?? '' : ''
+  const outline = outlineFor(selected, mode)
 
   if (editing) {
     return (
