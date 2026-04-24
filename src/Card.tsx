@@ -5,12 +5,14 @@ import { outlineFor } from './selection'
 
 type Props = {
   card: CardType
+  col: number
+  row: number
   selected: boolean
   mode: Mode
   dispatch: BoardDispatch
 }
 
-export function Card({ card, selected, mode, dispatch }: Props) {
+export function Card({ card, col, row, selected, mode, dispatch }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const editing = selected && mode === 'edit'
 
@@ -24,11 +26,15 @@ export function Card({ card, selected, mode, dispatch }: Props) {
       ? 'bg-emerald-600 text-white'
       : 'bg-slate-700 text-slate-100'
   const outline = outlineFor(selected, mode)
+  const testId = `card-${col}-${row}`
 
   if (editing) {
     return (
       <input
         ref={inputRef}
+        data-testid={testId}
+        data-card-col={col}
+        data-card-row={row}
         className={`${base} ${bg} ${outline} w-full`}
         value={card.text}
         onChange={(e) => dispatch({ type: 'setText', text: e.target.value })}
@@ -37,7 +43,12 @@ export function Card({ card, selected, mode, dispatch }: Props) {
   }
 
   return (
-    <div className={`${base} ${bg} ${outline} min-h-[2rem]`}>
+    <div
+      data-testid={testId}
+      data-card-col={col}
+      data-card-row={row}
+      className={`${base} ${bg} ${outline} min-h-[2rem]`}
+    >
       {card.text || <span className="text-slate-400 italic">empty</span>}
     </div>
   )

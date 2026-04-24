@@ -11,10 +11,10 @@ export function Board() {
     state.target === 'columns' && state.columnSelection === state.columns.length
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-6">
+    <div data-testid="board" className="min-h-screen bg-slate-900 text-slate-100 p-6">
       <header className="mb-4 flex items-center gap-4 flex-wrap">
         <h1 className="text-xl font-semibold">Vibello</h1>
-        <span className="text-xs rounded px-2 py-1 bg-slate-800 text-slate-300">
+        <span data-testid="mode-chip" className="text-xs rounded px-2 py-1 bg-slate-800 text-slate-300">
           Mode: <span className="text-sky-400 font-semibold">{state.target}</span>{' '}
           <span className="text-slate-500">(M to toggle)</span>
         </span>
