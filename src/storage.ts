@@ -2,7 +2,7 @@ import type { BoardState, Column } from './types'
 
 const KEY = 'vibello:board:v1'
 
-const uid = () => crypto.randomUUID()
+export const uid = () => crypto.randomUUID()
 
 const defaultColumns = (): Column[] => [
   { id: uid(), title: 'To Do', cards: [{ id: uid(), text: 'Welcome — press Enter to edit' }] },

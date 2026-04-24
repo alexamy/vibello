@@ -1,8 +1,6 @@
 import { useEffect, useReducer } from 'react'
-import type { BoardState, Card, Selection } from './types'
-import { loadBoard, saveBoard } from './storage'
-
-const uid = () => crypto.randomUUID()
+import type { BoardState, Card, Column, Selection } from './types'
+import { loadBoard, saveBoard, uid } from './storage'
 
 type Action =
   | { type: 'setMode'; mode: BoardState['mode'] }
@@ -15,8 +13,17 @@ type Action =
 
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n))
 
-const isCardRow = (state: BoardState, sel: NonNullable<Selection>) =>
+export const isCardRow = (state: BoardState, sel: NonNullable<Selection>) =>
   sel.row < state.columns[sel.col].cards.length
+
+const updateColumnCards = (
+  columns: Column[],
+  col: number,
+  fn: (cards: Card[]) => Card[],
+): Column[] => columns.map((c, i) => (i === col ? { ...c, cards: fn(c.cards) } : c))
+
+const sameSelection = (a: Selection, b: Selection) =>
+  a === b || (!!a && !!b && a.col === b.col && a.row === b.row)
 
 function reducer(state: BoardState, action: Action): BoardState {
   const next = step(state, action)
@@ -37,24 +44,25 @@ function step(state: BoardState, action: Action): BoardState {
       if (needsCard && (!state.selection || !isCardRow(state, state.selection))) {
         return state
       }
+      if (state.mode === action.mode) return state
       return { ...state, mode: action.mode }
     }
     case 'select':
+      if (sameSelection(state.selection, action.selection)) return state
       return { ...state, selection: action.selection }
     case 'moveSelection': {
       const sel = state.selection ?? { col: 0, row: state.columns[0].cards.length }
       const { col, row } = sel
       if (action.dy !== 0) {
-        const max = state.columns[col].cards.length
-        const nextRow = clamp(row + action.dy, 0, max)
+        const nextRow = clamp(row + action.dy, 0, state.columns[col].cards.length)
+        if (nextRow === row && state.selection) return state
         return { ...state, selection: { col, row: nextRow } }
       }
       if (action.dx !== 0) {
         const dir = action.dx > 0 ? 1 : -1
         const target = col + dir
         if (target < 0 || target >= state.columns.length) return state
-        const max = state.columns[target].cards.length
-        const nextRow = clamp(row, 0, max)
+        const nextRow = clamp(row, 0, state.columns[target].cards.length)
         return { ...state, selection: { col: target, row: nextRow } }
       }
       return state
@@ -62,60 +70,57 @@ function step(state: BoardState, action: Action): BoardState {
     case 'moveCard': {
       if (!state.selection || !isCardRow(state, state.selection)) return state
       const { col, row } = state.selection
-      const columns = state.columns.map((c) => ({ ...c, cards: [...c.cards] }))
-      const card = columns[col].cards[row]
 
       if (action.dy !== 0) {
         const nextRow = row + action.dy
-        if (nextRow < 0 || nextRow >= columns[col].cards.length) return state
-        ;[columns[col].cards[row], columns[col].cards[nextRow]] = [
-          columns[col].cards[nextRow],
-          columns[col].cards[row],
-        ]
+        if (nextRow < 0 || nextRow >= state.columns[col].cards.length) return state
+        const columns = updateColumnCards(state.columns, col, (cards) => {
+          const next = [...cards]
+          ;[next[row], next[nextRow]] = [next[nextRow], next[row]]
+          return next
+        })
         return { ...state, columns, selection: { col, row: nextRow } }
       }
       if (action.dx !== 0) {
         const dir = action.dx > 0 ? 1 : -1
         const target = col + dir
-        if (target < 0 || target >= columns.length) return state
-        columns[col].cards.splice(row, 1)
-        const insertAt = clamp(row, 0, columns[target].cards.length)
-        columns[target].cards.splice(insertAt, 0, card)
+        if (target < 0 || target >= state.columns.length) return state
+        const card = state.columns[col].cards[row]
+        const insertAt = clamp(row, 0, state.columns[target].cards.length)
+        let columns = updateColumnCards(state.columns, col, (cards) =>
+          cards.filter((_, j) => j !== row),
+        )
+        columns = updateColumnCards(columns, target, (cards) => {
+          const next = [...cards]
+          next.splice(insertAt, 0, card)
+          return next
+        })
         return { ...state, columns, selection: { col: target, row: insertAt } }
       }
       return state
     }
     case 'addCard': {
-      const columns = state.columns.map((c, i) =>
-        i === action.col ? { ...c, cards: [...c.cards, { id: uid(), text: '' } as Card] } : c,
-      )
+      const columns = updateColumnCards(state.columns, action.col, (cards) => [
+        ...cards,
+        { id: uid(), text: '' },
+      ])
       const row = columns[action.col].cards.length - 1
       return { ...state, columns, selection: { col: action.col, row }, mode: 'edit' }
     }
     case 'deleteCard': {
       if (!state.selection || !isCardRow(state, state.selection)) return state
       const { col, row } = state.selection
-      const columns = state.columns.map((c, i) =>
-        i === col ? { ...c, cards: c.cards.filter((_, j) => j !== row) } : c,
+      const columns = updateColumnCards(state.columns, col, (cards) =>
+        cards.filter((_, j) => j !== row),
       )
       const nextRow = clamp(row, 0, columns[col].cards.length)
-      return {
-        ...state,
-        columns,
-        selection: { col, row: nextRow },
-        mode: 'idle',
-      }
+      return { ...state, columns, selection: { col, row: nextRow }, mode: 'idle' }
     }
     case 'setText': {
       if (!state.selection || !isCardRow(state, state.selection)) return state
       const { col, row } = state.selection
-      const columns = state.columns.map((c, i) =>
-        i === col
-          ? {
-              ...c,
-              cards: c.cards.map((card, j) => (j === row ? { ...card, text: action.text } : card)),
-            }
-          : c,
+      const columns = updateColumnCards(state.columns, col, (cards) =>
+        cards.map((card, j) => (j === row ? { ...card, text: action.text } : card)),
       )
       return { ...state, columns }
     }

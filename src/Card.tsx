@@ -23,12 +23,12 @@ export function Card({ card, selected, mode, dispatch }: Props) {
       ? 'bg-emerald-600 text-white'
       : 'bg-slate-700 text-slate-100'
 
-  let outline = ''
-  if (selected) {
-    if (mode === 'edit') outline = 'outline outline-2 outline-amber-400'
-    else if (mode === 'confirmDelete') outline = 'outline outline-2 outline-red-500'
-    else if (mode === 'idle') outline = 'outline outline-2 outline-sky-400'
+  const OUTLINE: Partial<Record<Mode, string>> = {
+    idle: 'outline outline-2 outline-sky-400',
+    edit: 'outline outline-2 outline-amber-400',
+    confirmDelete: 'outline outline-2 outline-red-500',
   }
+  const outline = selected ? OUTLINE[mode] ?? '' : ''
 
   if (editing) {
     return (

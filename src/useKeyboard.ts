@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import type { BoardState } from './types'
-import type { BoardDispatch } from './useBoard'
+import { isCardRow, type BoardDispatch } from './useBoard'
 
 export function useKeyboard(state: BoardState, dispatch: BoardDispatch) {
   useEffect(() => {
@@ -38,20 +38,16 @@ export function useKeyboard(state: BoardState, dispatch: BoardDispatch) {
         case 'Enter': {
           if (!state.selection || state.mode !== 'idle') return
           e.preventDefault()
-          const { col, row } = state.selection
-          const cards = state.columns[col].cards
-          if (row >= cards.length) {
-            dispatch({ type: 'addCard', col })
-          } else {
+          if (isCardRow(state, state.selection)) {
             dispatch({ type: 'setMode', mode: 'edit' })
+          } else {
+            dispatch({ type: 'addCard', col: state.selection.col })
           }
           return
         }
         case 'Delete':
         case 'Backspace': {
-          if (!state.selection) return
-          const { col, row } = state.selection
-          if (row >= state.columns[col].cards.length) return
+          if (!state.selection || !isCardRow(state, state.selection)) return
           e.preventDefault()
           if (state.mode === 'confirmDelete') {
             dispatch({ type: 'deleteCard' })
