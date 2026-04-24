@@ -1,73 +1,55 @@
-# React + TypeScript + Vite
+# Vibello
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A minimal, keyboard-first Trello-like board. Two layers — cards and columns — share the same interaction model: arrows select, Shift+arrows move, Enter edits, Delete×2 removes. State persists in `localStorage`.
 
-Currently, two official plugins are available:
+Built with React 19, TypeScript, and Tailwind v4.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Run
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
+pnpm dev      # vite dev server
+pnpm build    # type-check + production build
+pnpm preview  # serve dist/
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Keyboard
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Key                | In `cards` target                    | In `columns` target               |
+| ------------------ | ------------------------------------ | --------------------------------- |
+| `M`                | switch to `columns`                  | switch to `cards`                 |
+| `←` `→`            | move selection between columns       | move selection between columns    |
+| `↑` `↓`            | move selection within column         | (no-op)                           |
+| `Shift` + arrows   | reorder card (within / across cols)  | reorder column                    |
+| `Enter`            | edit card text / activate `+` button | edit column title / `+` button    |
+| `Esc` / `Enter`    | exit edit mode                       | exit edit mode                    |
+| `Space`            | activate `+ Add card` button         | activate `+ Add column` button    |
+| `Delete` (×2)      | first arms (red outline), second deletes | same                          |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+The selection cursor lands on the trailing `+` slot when you arrow past the last item; press Enter or Space there to add.
+
+### Visual states
+
+- **Sky outline** — selected (idle)
+- **Amber outline** — editing
+- **Red outline** — armed for delete (press Delete again to confirm)
+- **Emerald fill** — held while reordering (Shift)
+
+The mode chip in the header shows the active target.
+
+## Project layout
+
 ```
+src/
+  Board.tsx       top-level layout
+  Column.tsx      column with header + cards + add-card button
+  Card.tsx        card render (text or input in edit mode)
+  ColumnAdd.tsx   trailing "+ Add column" button
+  useBoard.ts     reducer, action types, target-aware logic
+  useKeyboard.ts  global window keydown/keyup → actions
+  selection.ts    outlineFor() helper + outline color map
+  storage.ts      localStorage load/save with legacy migration
+  types.ts        BoardState, Card, Column, Mode, Target
+```
+
+The reducer is **target-aware**: actions like `moveSelection`, `moveItem`, `setText`, `deleteItem` branch on `state.target` rather than being duplicated. Selection per layer (`cardSelection`, `columnSelection`) is preserved across `M` toggles.
