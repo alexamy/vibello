@@ -1,12 +1,5 @@
 import { useEffect, useReducer } from 'react'
-import type {
-  BoardState,
-  CardSelection,
-  Column,
-  ColumnSelection,
-  Mode,
-  Target,
-} from './types'
+import type { BoardState, CardSelection, Column, Mode, Target } from './types'
 import { loadBoard, saveBoard, uid } from './storage'
 
 type Action =
@@ -18,15 +11,15 @@ type Action =
   | { type: 'addColumn' }
   | { type: 'deleteItem' }
   | { type: 'setText'; text: string }
-  | { type: 'selectCard'; selection: CardSelection }
-  | { type: 'selectColumn'; selection: ColumnSelection }
 
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n))
 
 export const isCardRow = (state: BoardState, sel: NonNullable<CardSelection>) =>
   sel.row < state.columns[sel.col].cards.length
 
-export const isColumnRow = (state: BoardState) =>
+export const isColumnRow = (
+  state: BoardState,
+): state is BoardState & { columnSelection: number } =>
   state.columnSelection !== null && state.columnSelection < state.columns.length
 
 export const hasItemSelection = (state: BoardState): boolean => {
@@ -64,11 +57,6 @@ function step(state: BoardState, action: Action): BoardState {
       if (state.target === action.target) return state
       return { ...state, target: action.target, mode: 'idle' }
     }
-    case 'selectCard':
-      return { ...state, cardSelection: action.selection }
-    case 'selectColumn':
-      return { ...state, columnSelection: action.selection }
-
     case 'moveSelection': {
       if (state.target === 'columns') {
         if (action.dx === 0) return state
@@ -77,7 +65,7 @@ function step(state: BoardState, action: Action): BoardState {
         if (next === cur) return state
         return { ...state, columnSelection: next }
       }
-      const sel = state.cardSelection ?? { col: 0, row: state.columns[0]?.cards.length ?? 0 }
+      const sel = state.cardSelection ?? { col: 0, row: 0 }
       const { col, row } = sel
       if (action.dy !== 0) {
         const nextRow = clamp(row + action.dy, 0, state.columns[col].cards.length)
@@ -97,7 +85,7 @@ function step(state: BoardState, action: Action): BoardState {
     case 'moveItem': {
       if (state.target === 'columns') {
         if (action.dx === 0 || !isColumnRow(state)) return state
-        const from = state.columnSelection!
+        const from = state.columnSelection
         const to = from + (action.dx > 0 ? 1 : -1)
         if (to < 0 || to >= state.columns.length) return state
         const columns = [...state.columns]
@@ -163,7 +151,7 @@ function step(state: BoardState, action: Action): BoardState {
     case 'deleteItem': {
       if (state.target === 'columns') {
         if (!isColumnRow(state)) return state
-        const idx = state.columnSelection!
+        const idx = state.columnSelection
         const columns = state.columns.filter((_, i) => i !== idx)
         const columnSelection = clamp(idx, 0, columns.length)
         return { ...state, columns, columnSelection, mode: 'idle' }
@@ -179,7 +167,7 @@ function step(state: BoardState, action: Action): BoardState {
     case 'setText': {
       if (state.target === 'columns') {
         if (!isColumnRow(state)) return state
-        const idx = state.columnSelection!
+        const idx = state.columnSelection
         const columns = state.columns.map((c, i) => (i === idx ? { ...c, title: action.text } : c))
         return { ...state, columns }
       }
@@ -198,7 +186,7 @@ export function useBoard() {
 
   useEffect(() => {
     saveBoard(state)
-  }, [state])
+  }, [state.columns, state.target, state.cardSelection, state.columnSelection]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return [state, dispatch] as const
 }

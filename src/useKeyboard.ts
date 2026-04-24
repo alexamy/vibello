@@ -20,7 +20,12 @@ export function useKeyboard(state: BoardState, dispatch: BoardDispatch) {
         return
       }
 
-      if (e.key === 'm' || e.key === 'M') {
+      if (
+        (e.key === 'm' || e.key === 'M') &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey
+      ) {
         e.preventDefault()
         dispatch({ type: 'setTarget', target: state.target === 'cards' ? 'columns' : 'cards' })
         return
