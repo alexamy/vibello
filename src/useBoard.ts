@@ -15,49 +15,55 @@ type Action =
 
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n))
 
-function findNonEmpty(cols: BoardState['columns'], start: number, dir: 1 | -1): number | null {
-  for (let i = start; i >= 0 && i < cols.length; i += dir) {
-    if (cols[i].cards.length > 0) return i
-  }
-  return null
-}
+const isCardRow = (state: BoardState, sel: NonNullable<Selection>) =>
+  sel.row < state.columns[sel.col].cards.length
 
 function reducer(state: BoardState, action: Action): BoardState {
+  const next = step(state, action)
+  const keepsArm =
+    (action.type === 'setMode' && action.mode === 'confirmDelete') ||
+    action.type === 'deleteCard'
+  if (!keepsArm && next.mode === 'confirmDelete') {
+    return { ...next, mode: 'idle' }
+  }
+  return next
+}
+
+function step(state: BoardState, action: Action): BoardState {
   switch (action.type) {
     case 'setMode': {
-      if (action.mode === 'edit' && !state.selection) return state
+      const needsCard =
+        action.mode === 'edit' || action.mode === 'grab' || action.mode === 'confirmDelete'
+      if (needsCard && (!state.selection || !isCardRow(state, state.selection))) {
+        return state
+      }
       return { ...state, mode: action.mode }
     }
     case 'select':
       return { ...state, selection: action.selection }
     case 'moveSelection': {
-      if (!state.selection) {
-        const col = findNonEmpty(state.columns, 0, 1)
-        if (col === null) return state
-        return { ...state, selection: { col, row: 0 } }
-      }
-      const { col, row } = state.selection
+      const sel = state.selection ?? { col: 0, row: state.columns[0].cards.length }
+      const { col, row } = sel
       if (action.dy !== 0) {
-        const cards = state.columns[col].cards
-        const nextRow = clamp(row + action.dy, 0, cards.length - 1)
+        const max = state.columns[col].cards.length
+        const nextRow = clamp(row + action.dy, 0, max)
         return { ...state, selection: { col, row: nextRow } }
       }
       if (action.dx !== 0) {
         const dir = action.dx > 0 ? 1 : -1
-        const target = findNonEmpty(state.columns, col + dir, dir)
-        if (target === null) return state
-        const cards = state.columns[target].cards
-        const nextRow = clamp(row, 0, cards.length - 1)
+        const target = col + dir
+        if (target < 0 || target >= state.columns.length) return state
+        const max = state.columns[target].cards.length
+        const nextRow = clamp(row, 0, max)
         return { ...state, selection: { col: target, row: nextRow } }
       }
       return state
     }
     case 'moveCard': {
-      if (!state.selection) return state
+      if (!state.selection || !isCardRow(state, state.selection)) return state
       const { col, row } = state.selection
       const columns = state.columns.map((c) => ({ ...c, cards: [...c.cards] }))
       const card = columns[col].cards[row]
-      if (!card) return state
 
       if (action.dy !== 0) {
         const nextRow = row + action.dy
@@ -87,25 +93,21 @@ function reducer(state: BoardState, action: Action): BoardState {
       return { ...state, columns, selection: { col: action.col, row }, mode: 'edit' }
     }
     case 'deleteCard': {
-      if (!state.selection) return state
+      if (!state.selection || !isCardRow(state, state.selection)) return state
       const { col, row } = state.selection
       const columns = state.columns.map((c, i) =>
         i === col ? { ...c, cards: c.cards.filter((_, j) => j !== row) } : c,
       )
-      const cards = columns[col].cards
-      let selection: Selection = null
-      if (cards.length > 0) {
-        selection = { col, row: clamp(row, 0, cards.length - 1) }
-      } else {
-        const left = findNonEmpty(columns, col - 1, -1)
-        const right = findNonEmpty(columns, col + 1, 1)
-        const pick = right ?? left
-        if (pick !== null) selection = { col: pick, row: 0 }
+      const nextRow = clamp(row, 0, columns[col].cards.length)
+      return {
+        ...state,
+        columns,
+        selection: { col, row: nextRow },
+        mode: 'idle',
       }
-      return { ...state, columns, selection, mode: 'idle' }
     }
     case 'setText': {
-      if (!state.selection) return state
+      if (!state.selection || !isCardRow(state, state.selection)) return state
       const { col, row } = state.selection
       const columns = state.columns.map((c, i) =>
         i === col

@@ -14,7 +14,7 @@ export function useKeyboard(state: BoardState, dispatch: BoardDispatch) {
       }
 
       if (e.key === 'Shift') {
-        if (state.mode === 'idle' && state.selection) {
+        if (state.mode !== 'grab' && state.selection) {
           dispatch({ type: 'setMode', mode: 'grab' })
         }
         return
@@ -36,17 +36,27 @@ export function useKeyboard(state: BoardState, dispatch: BoardDispatch) {
           return
         }
         case 'Enter': {
-          if (state.selection && state.mode === 'idle') {
-            e.preventDefault()
+          if (!state.selection || state.mode !== 'idle') return
+          e.preventDefault()
+          const { col, row } = state.selection
+          const cards = state.columns[col].cards
+          if (row >= cards.length) {
+            dispatch({ type: 'addCard', col })
+          } else {
             dispatch({ type: 'setMode', mode: 'edit' })
           }
           return
         }
         case 'Delete':
         case 'Backspace': {
-          if (state.selection) {
-            e.preventDefault()
+          if (!state.selection) return
+          const { col, row } = state.selection
+          if (row >= state.columns[col].cards.length) return
+          e.preventDefault()
+          if (state.mode === 'confirmDelete') {
             dispatch({ type: 'deleteCard' })
+          } else {
+            dispatch({ type: 'setMode', mode: 'confirmDelete' })
           }
           return
         }

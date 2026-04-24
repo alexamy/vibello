@@ -22,13 +22,19 @@ export function Card({ card, selected, mode, dispatch }: Props) {
     selected && mode === 'grab'
       ? 'bg-emerald-600 text-white'
       : 'bg-slate-700 text-slate-100'
-  const outline = selected && mode !== 'grab' ? 'outline outline-2 outline-sky-400' : ''
+
+  let outline = ''
+  if (selected) {
+    if (mode === 'edit') outline = 'outline outline-2 outline-amber-400'
+    else if (mode === 'confirmDelete') outline = 'outline outline-2 outline-red-500'
+    else if (mode === 'idle') outline = 'outline outline-2 outline-sky-400'
+  }
 
   if (editing) {
     return (
       <input
         ref={inputRef}
-        className={`${base} ${bg} ${outline} w-full bg-slate-700 outline outline-2 outline-sky-400`}
+        className={`${base} ${bg} ${outline} w-full`}
         value={card.text}
         onChange={(e) => dispatch({ type: 'setText', text: e.target.value })}
       />

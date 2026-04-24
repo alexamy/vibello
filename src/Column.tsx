@@ -11,6 +11,9 @@ type Props = {
 }
 
 export function Column({ column, index, selection, mode, dispatch }: Props) {
+  const addSelected =
+    selection?.col === index && selection?.row === column.cards.length
+  const addOutline = addSelected ? 'outline outline-2 outline-sky-400' : ''
   return (
     <div className="w-72 flex-shrink-0 bg-slate-800 rounded-lg p-3 flex flex-col gap-2">
       <h2 className="text-slate-200 font-medium text-sm uppercase tracking-wide px-1">
@@ -30,7 +33,7 @@ export function Column({ column, index, selection, mode, dispatch }: Props) {
       <button
         type="button"
         onClick={() => dispatch({ type: 'addCard', col: index })}
-        className="mt-auto rounded-md border border-dashed border-slate-600 text-slate-400 hover:text-slate-100 hover:border-slate-400 py-1.5 text-sm"
+        className={`mt-auto rounded-md border border-dashed border-slate-600 text-slate-400 hover:text-slate-100 hover:border-slate-400 py-1.5 text-sm ${addOutline}`}
       >
         + Add card
       </button>
