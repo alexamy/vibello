@@ -11,7 +11,7 @@ export function Board() {
       <header className="mb-4 flex items-baseline gap-4">
         <h1 className="text-xl font-semibold">Vibello</h1>
         <p className="text-xs text-slate-400">
-          Arrows select. Hold Shift + arrows to move. Enter toggles edit. Delete removes.
+          Arrows select. Shift+arrows move. Enter toggles edit (Esc also exits). Space adds card. Delete removes (twice to confirm).
         </p>
       </header>
       <div className="flex gap-4">

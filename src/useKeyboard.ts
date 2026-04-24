@@ -6,7 +6,7 @@ export function useKeyboard(state: BoardState, dispatch: BoardDispatch) {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (state.mode === 'edit') {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' || e.key === 'Escape') {
           e.preventDefault()
           dispatch({ type: 'setMode', mode: 'idle' })
         }
@@ -43,6 +43,12 @@ export function useKeyboard(state: BoardState, dispatch: BoardDispatch) {
           } else {
             dispatch({ type: 'addCard', col: state.selection.col })
           }
+          return
+        }
+        case ' ': {
+          if (!state.selection || state.mode !== 'idle') return
+          e.preventDefault()
+          dispatch({ type: 'addCard', col: state.selection.col })
           return
         }
         case 'Delete':
