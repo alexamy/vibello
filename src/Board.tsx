@@ -35,7 +35,9 @@ export function Board() {
             dispatch={dispatch}
           />
         ))}
-        <ColumnAdd selected={columnAddSelected} mode={state.mode} dispatch={dispatch} />
+        {state.target === 'columns' && (
+          <ColumnAdd selected={columnAddSelected} mode={state.mode} dispatch={dispatch} />
+        )}
       </div>
     </div>
   )

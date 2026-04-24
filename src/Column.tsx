@@ -76,13 +76,15 @@ export function Column({
           />
         ))}
       </div>
-      <button
-        type="button"
-        onClick={() => dispatch({ type: 'addCard', col: index })}
-        className={`mt-auto rounded-md border border-dashed border-slate-600 text-slate-400 hover:text-slate-100 hover:border-slate-400 py-1.5 text-sm ${addOutline}`}
-      >
-        + Add card
-      </button>
+      {target === 'cards' && (
+        <button
+          type="button"
+          onClick={() => dispatch({ type: 'addCard', col: index })}
+          className={`mt-auto rounded-md border border-dashed border-slate-600 text-slate-400 hover:text-slate-100 hover:border-slate-400 py-1.5 text-sm ${addOutline}`}
+        >
+          + Add card
+        </button>
+      )}
     </div>
   )
 }

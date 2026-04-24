@@ -59,10 +59,13 @@ export function useKeyboard(state: BoardState, dispatch: BoardDispatch) {
         }
         case ' ': {
           if (state.mode !== 'idle') return
-          e.preventDefault()
           if (state.target === 'columns') {
+            if (isColumnRow(state)) return
+            e.preventDefault()
             dispatch({ type: 'addColumn' })
-          } else if (state.cardSelection) {
+          } else {
+            if (!state.cardSelection || isCardRow(state, state.cardSelection)) return
+            e.preventDefault()
             dispatch({ type: 'addCard', col: state.cardSelection.col })
           }
           return
