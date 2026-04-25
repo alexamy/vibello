@@ -3,6 +3,15 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "author": "alexamy",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexamy/vibello.git"
+  },
+  "homepage": "https://github.com/alexamy/vibello",
+  "bugs": {
+    "url": "https://github.com/alexamy/vibello/issues"
+  },
   "packageManager": "pnpm@10.33.2",
   "scripts": {
     "dev": "vite",
