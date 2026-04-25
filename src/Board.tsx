@@ -28,7 +28,7 @@ export function Board() {
           <span className="text-slate-500">(M to toggle)</span>
         </span>
         <p className="text-xs text-slate-400">
-          Arrows select. Shift+arrows move. Enter edits (Shift+Enter / Esc exits). Space adds. C tags. Delete×2 removes.
+          Arrows select. Shift+arrows move. Enter edits (Shift+Enter / Esc exits). Space adds. C tags. Delete×2 removes. <strong className="font-semibold">Tab navigation not supported yet.</strong>
         </p>
       </header>
       <div className="flex gap-4 items-start">
