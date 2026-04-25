@@ -6,7 +6,7 @@ export function useKeyboard(state: BoardState, dispatch: BoardDispatch) {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (state.mode === 'edit') {
-        if (e.key === 'Enter' || e.key === 'Escape') {
+        if (e.key === 'Escape' || (e.key === 'Enter' && e.shiftKey)) {
           e.preventDefault()
           dispatch({ type: 'setMode', mode: 'idle' })
         }

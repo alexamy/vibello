@@ -19,7 +19,7 @@ export function Board() {
           <span className="text-slate-500">(M to toggle)</span>
         </span>
         <p className="text-xs text-slate-400">
-          Arrows select. Shift+arrows move. Enter toggles edit (Esc exits). Space adds. Delete×2 removes.
+          Arrows select. Shift+arrows move. Enter edits (Shift+Enter / Esc exits). Space adds. Delete×2 removes.
         </p>
       </header>
       <div className="flex gap-4 items-start">

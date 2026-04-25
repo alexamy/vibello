@@ -52,7 +52,7 @@ test.describe('Card move (Shift+Arrow)', () => {
 })
 
 test.describe('Edit card', () => {
-  test('Enter enters edit mode (amber outline), typing updates, Enter exits', async ({
+  test('Enter enters edit mode (amber outline), typing updates, Shift+Enter exits', async ({
     page,
   }) => {
     await freshLoad(page)
@@ -61,9 +61,22 @@ test.describe('Edit card', () => {
     await expect(input).toHaveClass(/outline-amber-400/)
     await page.keyboard.press('End')
     await page.keyboard.type(' edited')
-    await page.keyboard.press('Enter')
+    await page.keyboard.press('Shift+Enter')
     await expect(page.getByTestId('card-0-0')).toContainText('Welcome — press Enter to edit edited')
     await expect(page.getByTestId('card-0-0')).toHaveClass(/outline-sky-400/)
+  })
+
+  test('Enter inserts newline inside card', async ({ page }) => {
+    await freshLoad(page)
+    await page.keyboard.press('Enter')
+    await page.keyboard.press('End')
+    await page.keyboard.type(' line1')
+    await page.keyboard.press('Enter')
+    await page.keyboard.type('line2')
+    await page.keyboard.press('Shift+Enter')
+    const card = page.getByTestId('card-0-0')
+    await expect(card).toContainText('line1')
+    await expect(card).toContainText('line2')
   })
 
   test('Escape also exits edit', async ({ page }) => {
@@ -101,7 +114,7 @@ test.describe('Add card via Space', () => {
     const newCard = page.getByTestId('card-1-0')
     await expect(newCard).toHaveClass(/outline-amber-400/)
     await page.keyboard.type('hello')
-    await page.keyboard.press('Enter')
+    await page.keyboard.press('Shift+Enter')
     await expect(page.getByTestId('card-1-0')).toContainText('hello')
   })
 
@@ -153,7 +166,7 @@ test.describe('Columns target', () => {
     await page.keyboard.press('Enter')
     await expect(page.getByTestId('column-3')).toBeVisible()
     await page.keyboard.type('Backlog')
-    await page.keyboard.press('Enter')
+    await page.keyboard.press('Shift+Enter')
     await expect(page.getByTestId('column-title-3')).toHaveText('Backlog')
   })
 
@@ -174,7 +187,7 @@ test.describe('Persistence', () => {
     await page.keyboard.press('ArrowRight')
     await page.keyboard.press('Space')
     await page.keyboard.type('persisted')
-    await page.keyboard.press('Enter')
+    await page.keyboard.press('Shift+Enter')
     await expect(page.getByTestId('card-1-0')).toContainText('persisted')
     await page.reload()
     await expect(page.getByTestId('card-1-0')).toContainText('persisted')

@@ -13,14 +13,19 @@ type Props = {
 }
 
 export function Card({ card, col, row, selected, mode, dispatch }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   const editing = selected && mode === 'edit'
 
   useEffect(() => {
-    if (editing) inputRef.current?.focus()
+    if (editing) {
+      const el = inputRef.current
+      if (!el) return
+      el.focus()
+      el.setSelectionRange(el.value.length, el.value.length)
+    }
   }, [editing])
 
-  const base = 'rounded-md p-2 text-sm break-words cursor-default select-none'
+  const base = 'rounded-md p-2 text-sm break-words cursor-default select-none whitespace-pre-wrap'
   const bg =
     selected && mode === 'grab'
       ? 'bg-emerald-600 text-white'
@@ -30,12 +35,13 @@ export function Card({ card, col, row, selected, mode, dispatch }: Props) {
 
   if (editing) {
     return (
-      <input
+      <textarea
         ref={inputRef}
         data-testid={testId}
         data-card-col={col}
         data-card-row={row}
-        className={`${base} ${bg} ${outline} w-full`}
+        rows={Math.max(1, card.text.split('\n').length)}
+        className={`${base} ${bg} ${outline} w-full resize-none font-sans`}
         value={card.text}
         onChange={(e) => dispatch({ type: 'setText', text: e.target.value })}
       />
