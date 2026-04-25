@@ -69,6 +69,14 @@ export function Column({
         </h2>
       )}
       <div className="flex flex-col gap-2">
+        {column.cards.length === 0 && target === 'cards' && (
+          <p
+            data-testid={`empty-hint-${index}`}
+            className="text-xs italic text-slate-500 px-1 py-2 select-none"
+          >
+            No cards. Press Space to add.
+          </p>
+        )}
         {column.cards.map((card, row) => (
           <Card
             key={card.id}

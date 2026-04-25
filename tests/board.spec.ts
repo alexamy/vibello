@@ -19,6 +19,19 @@ test.describe('Initial render', () => {
     await expect(welcome).toHaveClass(/outline-sky-400/)
     await expect(page.getByTestId('mode-chip')).toContainText('cards')
   })
+
+  test('empty columns show hint, populated do not', async ({ page }) => {
+    await freshLoad(page)
+    await expect(page.getByTestId('empty-hint-0')).toHaveCount(0)
+    await expect(page.getByTestId('empty-hint-1')).toBeVisible()
+    await expect(page.getByTestId('empty-hint-2')).toBeVisible()
+  })
+
+  test('hint hidden in columns target', async ({ page }) => {
+    await freshLoad(page)
+    await page.keyboard.press('m')
+    await expect(page.getByTestId('empty-hint-1')).toHaveCount(0)
+  })
 })
 
 test.describe('Card navigation (cards target)', () => {
