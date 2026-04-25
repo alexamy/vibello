@@ -194,6 +194,34 @@ test.describe('Columns target', () => {
   })
 })
 
+test.describe('Card colors', () => {
+  test('c cycles color, returns to none after full loop', async ({ page }) => {
+    await freshLoad(page)
+    const card = page.getByTestId('card-0-0')
+    await expect(card).not.toHaveClass(/border-red-500/)
+    await page.keyboard.press('c')
+    await expect(card).toHaveClass(/border-red-500/)
+    await page.keyboard.press('c')
+    await expect(card).toHaveClass(/border-amber-400/)
+    for (let i = 0; i < 4; i++) await page.keyboard.press('c')
+    await expect(card).not.toHaveClass(/border-l-4/)
+  })
+
+  test('c ignored in edit mode', async ({ page }) => {
+    await freshLoad(page)
+    await page.keyboard.press('Enter')
+    await page.keyboard.press('c')
+    await expect(page.getByTestId('card-0-0')).not.toHaveClass(/border-l-4/)
+  })
+
+  test('c ignored in columns target', async ({ page }) => {
+    await freshLoad(page)
+    await page.keyboard.press('m')
+    await page.keyboard.press('c')
+    await expect(page.getByTestId('card-0-0')).not.toHaveClass(/border-l-4/)
+  })
+})
+
 test.describe('Persistence', () => {
   test('state survives reload', async ({ page }) => {
     await freshLoad(page)

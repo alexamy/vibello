@@ -1,5 +1,5 @@
 import { useEffect, useReducer } from 'react'
-import type { BoardState, CardSelection, Column, Mode, Target } from './types'
+import type { BoardState, CardColor, CardSelection, Column, Mode, Target } from './types'
 import { loadBoard, saveBoard, uid } from './storage'
 
 type Action =
@@ -11,6 +11,7 @@ type Action =
   | { type: 'addColumn' }
   | { type: 'deleteItem' }
   | { type: 'setText'; text: string }
+  | { type: 'cycleColor' }
 
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n))
 
@@ -26,6 +27,8 @@ export const hasItemSelection = (state: BoardState): boolean => {
   if (state.target === 'cards') return !!state.cardSelection && isCardRow(state, state.cardSelection)
   return isColumnRow(state)
 }
+
+export const CARD_COLORS: CardColor[] = ['none', 'red', 'amber', 'emerald', 'sky', 'violet']
 
 const updateColumnCards = (
   columns: Column[],
@@ -127,7 +130,7 @@ function step(state: BoardState, action: Action): BoardState {
     case 'addCard': {
       const columns = updateColumnCards(state.columns, action.col, (cards) => [
         ...cards,
-        { id: uid(), text: '' },
+        { id: uid(), text: '', color: 'none' },
       ])
       const row = columns[action.col].cards.length - 1
       return {
@@ -163,6 +166,20 @@ function step(state: BoardState, action: Action): BoardState {
       )
       const nextRow = clamp(row, 0, columns[col].cards.length)
       return { ...state, columns, cardSelection: { col, row: nextRow }, mode: 'idle' }
+    }
+    case 'cycleColor': {
+      if (state.target !== 'cards') return state
+      if (!state.cardSelection || !isCardRow(state, state.cardSelection)) return state
+      const { col, row } = state.cardSelection
+      const columns = updateColumnCards(state.columns, col, (cards) =>
+        cards.map((card, j) => {
+          if (j !== row) return card
+          const idx = CARD_COLORS.indexOf(card.color ?? 'none')
+          const next = CARD_COLORS[(idx + 1) % CARD_COLORS.length]
+          return { ...card, color: next }
+        }),
+      )
+      return { ...state, columns }
     }
     case 'setText': {
       if (state.target === 'columns') {

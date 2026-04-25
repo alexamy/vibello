@@ -31,6 +31,20 @@ export function useKeyboard(state: BoardState, dispatch: BoardDispatch) {
         return
       }
 
+      if (
+        (e.key === 'c' || e.key === 'C') &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        state.mode === 'idle' &&
+        state.target === 'cards' &&
+        hasItemSelection(state)
+      ) {
+        e.preventDefault()
+        dispatch({ type: 'cycleColor' })
+        return
+      }
+
       switch (e.key) {
         case 'ArrowUp':
         case 'ArrowDown':

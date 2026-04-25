@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import type { Card as CardType, Mode } from './types'
+import type { Card as CardType, CardColor, Mode } from './types'
 import type { BoardDispatch } from './useBoard'
 import { outlineFor } from './selection'
 
@@ -10,6 +10,15 @@ type Props = {
   selected: boolean
   mode: Mode
   dispatch: BoardDispatch
+}
+
+const COLOR_BORDER: Record<CardColor, string> = {
+  none: '',
+  red: 'border-l-4 border-red-500',
+  amber: 'border-l-4 border-amber-400',
+  emerald: 'border-l-4 border-emerald-400',
+  sky: 'border-l-4 border-sky-400',
+  violet: 'border-l-4 border-violet-400',
 }
 
 export function Card({ card, col, row, selected, mode, dispatch }: Props) {
@@ -31,6 +40,7 @@ export function Card({ card, col, row, selected, mode, dispatch }: Props) {
       ? 'bg-emerald-600 text-white'
       : 'bg-slate-700 text-slate-100'
   const outline = outlineFor(selected, mode)
+  const colorBorder = COLOR_BORDER[card.color ?? 'none']
   const testId = `card-${col}-${row}`
 
   if (editing) {
@@ -41,7 +51,7 @@ export function Card({ card, col, row, selected, mode, dispatch }: Props) {
         data-card-col={col}
         data-card-row={row}
         rows={Math.max(1, card.text.split('\n').length)}
-        className={`${base} ${bg} ${outline} w-full resize-none font-sans`}
+        className={`${base} ${bg} ${outline} ${colorBorder} w-full resize-none font-sans`}
         value={card.text}
         onChange={(e) => dispatch({ type: 'setText', text: e.target.value })}
       />
@@ -53,7 +63,7 @@ export function Card({ card, col, row, selected, mode, dispatch }: Props) {
       data-testid={testId}
       data-card-col={col}
       data-card-row={row}
-      className={`${base} ${bg} ${outline} min-h-[2rem]`}
+      className={`${base} ${bg} ${outline} ${colorBorder} min-h-[2rem]`}
     >
       {card.text || <span className="text-slate-400 italic">empty</span>}
     </div>
