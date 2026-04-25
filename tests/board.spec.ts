@@ -44,38 +44,12 @@ test.describe('Card navigation (cards target)', () => {
     await expect(page.getByTestId('card-0-0')).not.toHaveClass(/outline-sky-400/)
   })
 
-  test('Down clamps at add-card slot, then wraps to next column', async ({ page }) => {
+  test('Down clamps at add-card slot', async ({ page }) => {
     await freshLoad(page)
     await page.keyboard.press('ArrowDown')
     await expect(page.getByTestId('add-card-0')).toHaveClass(/outline-sky-400/)
     await page.keyboard.press('ArrowDown')
-    await expect(page.getByTestId('add-card-1')).toHaveClass(/outline-sky-400/)
-  })
-
-  test('Up at row 0 wraps to last card of previous column', async ({ page }) => {
-    await freshLoad(page)
-    await page.keyboard.press('ArrowRight')
-    await page.keyboard.press('Space')
-    await page.keyboard.type('c1')
-    await page.keyboard.press('Shift+Enter')
-    await expect(page.getByTestId('card-1-0')).toContainText('c1')
-    await page.keyboard.press('ArrowUp')
-    await expect(page.getByTestId('card-0-0')).toHaveClass(/outline-sky-400/)
-  })
-
-  test('Up at first column row 0 stays', async ({ page }) => {
-    await freshLoad(page)
-    await page.keyboard.press('ArrowUp')
-    await expect(page.getByTestId('card-0-0')).toHaveClass(/outline-sky-400/)
-  })
-
-  test('Down at last column add-slot stays', async ({ page }) => {
-    await freshLoad(page)
-    await page.keyboard.press('ArrowRight')
-    await page.keyboard.press('ArrowRight')
-    await expect(page.getByTestId('add-card-2')).toHaveClass(/outline-sky-400/)
-    await page.keyboard.press('ArrowDown')
-    await expect(page.getByTestId('add-card-2')).toHaveClass(/outline-sky-400/)
+    await expect(page.getByTestId('add-card-0')).toHaveClass(/outline-sky-400/)
   })
 })
 

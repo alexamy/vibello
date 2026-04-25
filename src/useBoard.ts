@@ -71,16 +71,7 @@ function step(state: BoardState, action: Action): BoardState {
       const sel = state.cardSelection ?? { col: 0, row: 0 }
       const { col, row } = sel
       if (action.dy !== 0) {
-        const max = state.columns[col].cards.length
-        const target = row + action.dy
-        if (target < 0 && col > 0) {
-          const prev = state.columns[col - 1].cards.length
-          return { ...state, cardSelection: { col: col - 1, row: Math.max(0, prev - 1) } }
-        }
-        if (target > max && col < state.columns.length - 1) {
-          return { ...state, cardSelection: { col: col + 1, row: 0 } }
-        }
-        const nextRow = clamp(target, 0, max)
+        const nextRow = clamp(row + action.dy, 0, state.columns[col].cards.length)
         if (nextRow === row && state.cardSelection) return state
         return { ...state, cardSelection: { col, row: nextRow } }
       }
