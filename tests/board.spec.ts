@@ -230,21 +230,21 @@ test.describe('Card colors', () => {
     await page.keyboard.press('c')
     await expect(card).toHaveClass(/border-amber-400/)
     for (let i = 0; i < 4; i++) await page.keyboard.press('c')
-    await expect(card).not.toHaveClass(/border-l-4/)
+    await expect(card).not.toHaveClass(/border-r-8/)
   })
 
   test('c ignored in edit mode', async ({ page }) => {
     await freshLoad(page)
     await page.keyboard.press('Enter')
     await page.keyboard.press('c')
-    await expect(page.getByTestId('card-0-0')).not.toHaveClass(/border-l-4/)
+    await expect(page.getByTestId('card-0-0')).not.toHaveClass(/border-r-8/)
   })
 
   test('c ignored in columns target', async ({ page }) => {
     await freshLoad(page)
     await page.keyboard.press('m')
     await page.keyboard.press('c')
-    await expect(page.getByTestId('card-0-0')).not.toHaveClass(/border-l-4/)
+    await expect(page.getByTestId('card-0-0')).not.toHaveClass(/border-r-8/)
   })
 })
 

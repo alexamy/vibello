@@ -14,11 +14,11 @@ type Props = {
 
 const COLOR_BORDER: Record<CardColor, string> = {
   none: '',
-  red: 'border-l-4 border-red-500',
-  amber: 'border-l-4 border-amber-400',
-  emerald: 'border-l-4 border-emerald-400',
-  sky: 'border-l-4 border-sky-400',
-  violet: 'border-l-4 border-violet-400',
+  red: 'border-r-8 border-red-500',
+  amber: 'border-r-8 border-amber-400',
+  emerald: 'border-r-8 border-emerald-400',
+  sky: 'border-r-8 border-sky-400',
+  violet: 'border-r-8 border-violet-400',
 }
 
 export function Card({ card, col, row, selected, mode, dispatch }: Props) {
